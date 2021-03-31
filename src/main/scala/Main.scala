@@ -37,9 +37,10 @@ object Main {
 		//TODO improve input management with defaults
 		//TODO add docs
 		val bootstrapServers = args(0)
-	    val topic = args(1)
-	    val offset = args(2)
-	    val groupId = args(3)	
+	    val initalTopic = args(1)
+	    val finalTopic = args(2)
+	    val offset = args(3)
+	    val groupId = args(4)	
 
 
 	    implicit val actorSystem = ActorSystem(Behaviors.empty, "kafkaProdCons")
@@ -63,13 +64,13 @@ object Main {
 
 	    val done: Future[Done] =
 	      source
-	        .map(value => new ProducerRecord[String, SensorData](topic, SensorData(s"$value",value)))
+	        .map(value => new ProducerRecord[String, SensorData](initalTopic, SensorData(s"$value",value)))
 	        .runWith(Producer.plainSink(producerSettings))
 
 	     val (control, result) = Consumer
 	      .plainSource(
 	        consumerSettings,
-	        Subscriptions.topics(topic)
+	        Subscriptions.topics(finalTopic)
 	      )
 	      .toMat(Sink.seq)(Keep.both)
 	      .run()
